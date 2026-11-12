@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حنكك - تواصل مع أصدقائك والعالم من حولك</title>
+    <!-- تحميل خطوط Cairo و Tajawal و Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <!-- تحميل Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- تحميل أيقونات FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Cairo', 'Tajawal', 'sans-serif'],
+                        en: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#1877f2',
+                            600: '#166fe5',
+                            700: '#1d4ed8',
+                        },
+                        fbBlue: '#1877F2',
+                        fbBlueHover: '#166FE5',
+                        fbBg: '#F0F2F5',
+                        fbText: '#1C1E21',
+                        fbSecondary: '#65676B',
+                        surface: '#f0f2f5',
+                    },
+                    animation: {
+                        'logo-entrance': 'logoEntrance 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards',
+                        'subtle-pulse': 'subtlePulse 2.5s infinite ease-in-out 0.9s',
+                        'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
+                    },
+                    keyframes: {
+                        logoEntrance: {
+                            '0%': { opacity: '0', transform: 'scale(0.65)' },
+                            '70%': { opacity: '1', transform: 'scale(1.04)' },
+                            '100%': { opacity: '1', transform: 'scale(1)' },
+                        },
+                        subtlePulse: {
+                            '0%, 100%': { transform: 'scale(1)' },
+                            '50%': { transform: 'scale(1.03)' },
+                        },
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(15px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Cairo', 'Tajawal', sans-serif;
+            background-color: #ffffff;
+            color: #1c1e21;
+            overflow-x: hidden;
+        }
+        /* تنسيقات مخصصة لنقاط التحميل المتحركة بأسلوب فيسبوك */
+        .loading-dot {
+            animation: dotBounce 1.4s infinite ease-in-out both;
+        }
+        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+        .loading-dot:nth-child(3) { animation-delay: 0s; }
+        .loading-dot:nth-child(4) { animation-delay: 0.16s; }
+        .loading-dot:nth-child(5) { animation-delay: 0.32s; }
+
+        @keyframes dotBounce {
+            0%, 80%, 100% { 
+                transform: scale(0.7);
+                background-color: #D8DADF;
+            } 
+            40% { 
+                transform: scale(1.15);
+                background-color: #1877F2;
+            }
+        }
+
+        /* انتقال ناعم للشاشات */
+        .screen-transition {
+            transition: opacity 0.45s ease, transform 0.45s ease;
+        }
+
+        /* تخصيص شريط التمرير ليكون أنيقاً ومخفياً في القوائم الجانبية */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: transparent;
+            border-radius: 10px;
+        }
+        .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+            background: #bcc0c4;
+        }
+        /* إخفاء شريط التمرير للقصص */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* تأثير نبضة الإعجاب */
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+        .animate-pop {
+            animation: pop 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- شريط علوي مخفي للتبديل السريع وتخصيص المظهر (للمعاينة في شاشة البداية) -->
+    <div id="previewControls" class="fixed top-4 left-4 z-50 flex items-center gap-2 bg-gray-100/90 backdrop-blur-sm p-1.5 rounded-full shadow-sm border border-gray-200 text-xs transition-opacity duration-300">
+        <button onclick="toggleShape()" id="shapeBtn" class="px-3 py-1.5 rounded-full bg-white text-fbText font-medium shadow-sm hover:bg-gray-50 transition">
+            الشكل: دائري
+        </button>
+        <button onclick="replaySplash()" class="px-3 py-1.5 rounded-full bg-fbBlue text-white font-medium hover:bg-fbBlueHover transition">
+            إعادة التشغيل ↻
+        </button>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 1. شاشة البداية (SPLASH SCREEN)            -->
+    <!-- ========================================== -->
+    <main id="splashScreen" class="screen-transition flex flex-col items-center justify-between py-10 px-6 w-full min-h-screen bg-white select-none">
+        
+        <!-- مساحة فارغة علوية لموازنة التوسيط العمودي بدقة -->
+        <div class="h-12"></div>
+
+        <!-- المنتصف: الشعار الرئيسي (حرف H) + حالة التحميل أو زر الدخول -->
+        <div class="flex flex-col items-center justify-center my-auto w-full max-w-sm">
+            
+            <!-- حاوية الشعار الأزرق الملكي -->
+            <div id="logoContainer" class="animate-logo-entrance relative flex items-center justify-center w-24 h-24 sm:w-28 sm:h-28 bg-fbBlue rounded-full shadow-lg shadow-blue-500/25 transition-all duration-500 cursor-pointer" onclick="replaySplash()">
+                <!-- رسم SVG لحرف H الهندسي الأنيق -->
+                <svg class="w-12 h-12 sm:w-14 sm:h-14 text-white fill-current" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 16C22 13.7909 23.7909 12 26 12H36C38.2091 12 40 13.7909 40 16V41H60V16C60 13.7909 61.7909 12 64 12H74C76.2091 12 78 13.7909 78 16V84C78 86.2091 76.2091 88 74 88H64C61.7909 88 60 86.2091 60 84V57H40V84C40 86.2091 38.2091 88 36 88H26C23.7909 88 22 86.2091 22 84V16Z"/>
+                </svg>
+            </div>
+
+            <!-- منطقة التفاعل الديناميكية (نقاط التحميل ثم زر الدخول) -->
+            <div class="mt-10 h-16 flex flex-col items-center justify-center w-full">
+                
+                <!-- مؤشر التحميل (Loading Dots) -->
+                <div id="loadingIndicator" class="flex items-center justify-center gap-2 transition-opacity duration-300" aria-label="جاري التحميل">
+                    <span class="loading-dot w-2.5 h-2.5 rounded-full bg-gray-300"></span>
+                    <span class="loading-dot w-2.5 h-2.5 rounded-full bg-gray-300"></span>
+                    <span class="loading-dot w-2.5 h-2.5 rounded-full bg-gray-300"></span>
+                    <span class="loading-dot w-2.5 h-2.5 rounded-full bg-gray-300"></span>
+                    <span class="loading-dot w-2.5 h-2.5 rounded-full bg-gray-300"></span>
+                </div>
+
+                <!-- زر الانتقال إلى شاشة تسجيل الدخول (يظهر بعد انتهاء التحميل) -->
+                <div id="actionArea" class="hidden flex-col items-center w-full animate-fade-in-up">
+                    <button onclick="enterLoginScreen()" class="w-full sm:w-64 py-3 px-6 bg-fbBlue hover:bg-fbBlueHover active:scale-[0.98] text-white font-bold text-base rounded-full shadow-md shadow-blue-500/20 transition-all duration-200 flex items-center justify-center gap-2">
+                        <span>المتابعة إلى التطبيق</span>
+                        <svg class="w-5 h-5 rtl:rotate-180" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                        </svg>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- الأسفل: الشعار الفرعي -->
+        <footer class="flex flex-col items-center justify-center text-center pb-2">
+            <span class="text-xs sm:text-sm text-fbSecondary font-medium tracking-wide mb-1">
+                مدعوم من
+            </span>
+            <div class="flex items-center gap-1.5 text-fbBlue font-en font-bold text-lg sm:text-xl tracking-tight">
+                <svg class="w-6 h-6 text-fbBlue" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18.178 8c5.096 0 5.096 8 0 8-5.095 0-7.133-8-12.739-8-4.585 0-4.585 8 0 8 5.606 0 7.644-8 12.74-8z"/>
+                </svg>
+                <span>H-Connect</span>
+            </div>
+        </footer>
+    </main>
+
+    <!-- ========================================== -->
+    <!-- 2. شاشة تسجيل الدخول / إنشاء حساب          -->
+    <!-- ========================================== -->
+    <section id="loginScreen" class="hidden screen-transition opacity-0 translate-y-4 min-h-screen bg-fbBg flex flex-col items-center justify-center p-4 sm:p-6">
+        <div class="w-full max-w-md bg-white rounded-2xl shadow-lg p-6 sm:p-8 border border-gray-100">
+            
+            <!-- رأس البطاقة مع الشعار المصغر -->
+            <div class="flex flex-col items-center text-center mb-6">
+                <div class="w-14 h-14 bg-fbBlue rounded-full flex items-center justify-center shadow-md shadow-blue-500/20 mb-3">
+                    <svg class="w-7 h-7 text-white fill-current" viewBox="0 0 100 100">
+                        <path d="M22 16C22 13.7909 23.7909 12 26 12H36C38.2091 12 40 13.7909 40 16V41H60V16C60 13.7909 61.7909 12 64 12H74C76.2091 12 78 13.7909 78 16V84C78 86.2091 76.2091 88 74 88H64C61.7909 88 60 86.2091 60 84V57H40V84C40 86.2091 38.2091 88 36 88H26C23.7909 88 22 86.2091 22 84V16Z"/>
+                    </svg>
+                </div>
+                <h1 class="text-2xl font-bold text-fbText">مرحباً بك في مجتمع حنكك</h1>
+                <p class="text-sm text-fbSecondary mt-1">تواصل مع الأصدقاء والعائلة والعالم من حولك</p>
+            </div>
+
+            <!-- نموذج تسجيل الدخول -->
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <input type="text" id="loginIdentifier" required placeholder="البريد الإلكتروني أو اسمك (مثال: أحمد المنصوري)" 
+                        class="w-full px-4 py-3.5 rounded-xl border border-gray-300 focus:border-fbBlue focus:ring-2 focus:ring-blue-500/20 outline-none text-sm transition">
+                </div>
+                <div>
+                    <input type="password" id="loginPassword" required placeholder="كلمة السر" 
+                        class="w-full px-4 py-3.5 rounded-xl border border-gray-300 focus:border-fbBlue focus:ring-2 focus:ring-blue-500/20 outline-none text-sm transition">
+                </div>
+                <button type="submit" class="w-full py-3.5 bg-fbBlue hover:bg-fbBlueHover text-white font-bold rounded-xl shadow-sm transition text-base">
+                    تسجيل الدخول
+                </button>
+            </form>
+
+            <!-- نموذج إنشاء حساب جديد (مخفي افتراضياً) -->
+            <form id="registerForm" onsubmit="handleRegister(event)" class="hidden space-y-3.5">
+                <div class="grid grid-cols-2 gap-2.5">
+                    <input type="text" id="regFirstName" required placeholder="الاسم الأول" 
+                        class="w-full px-3.5 py-3 rounded-xl border border-gray-300 focus:border-fbBlue focus:ring-2 focus:ring-blue-500/20 outline-none text-sm transition">
+                    <input type="text" id="regLastName" required placeholder="اسم العائلة" 
+                        class="w-full px-3.5 py-3 rounded-xl border border-gray-300 focus:border-fbBlue focus:ring-2 focus:ring-blue-500/20 outline-none text-sm transition">
+                </div>
+                <div>
+                    <input type="text" id="regEmail" required placeholder="البريد الإلكتروني أو رقم الهاتف" 
+                        class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-fbBlue focus:ring-2 focus:ring-blue-500/20 outline-none text-sm transition">
+                </div>
+                <div>
+                    <input type="password" id="regPassword" required placeholder="كلمة سر جديدة" 
+                        class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-fbBlue focus:ring-2 focus:ring-blue-500/20 outline-none text-sm transition">
+                </div>
+                <button type="submit" class="w-full py-3.5 bg-[#42B72A] hover:bg-[#36A420] text-white font-bold rounded-xl shadow-sm transition text-base">
+                    إنشاء الحساب والدخول لحنكك
+                </button>
+                <button type="button" onclick="toggleAuthMode('login')" class="w-full text-xs text-fbBlue hover:underline font-semibold pt-1">
+                    لديك حساب بالفعل؟ العودة لتسجيل الدخول
+                </button>
+            </form>
+
+            <div id="forgotPassSection" class="text-center mt-4">
+                <a href="#" onclick="event.preventDefault(); showToast('تم إرسال رابط استعادة كلمة السر لبريدك الإلكتروني')" class="text-sm text-fbBlue hover:underline font-medium">
+                    هل نسيت كلمة السر؟
+                </a>
+            </div>
+
+            <hr class="my-5 border-gray-200">
+
+            <div class="flex flex-col gap-2.5">
+                <button id="createAccountBtn" onclick="toggleAuthMode('register')" class="w-full py-3 bg-[#42B72A] hover:bg-[#36A420] text-white font-bold rounded-xl transition text-sm">
+                    إنشاء حساب جديد
+                </button>
+                <button onclick="quickDemoLogin()" class="w-full py-2.5 bg-brand-50 hover:bg-brand-100 text-brand-600 font-bold rounded-xl transition text-xs flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-bolt"></i>
+                    <span>دخول سريع كزائر (أحمد المنصوري)</span>
+                </button>
+                <button onclick="backToSplash()" class="w-full py-2 text-fbSecondary hover:text-fbText text-xs font-medium transition">
+                    ← العودة إلى شاشة البداية (Splash Screen)
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- 3. واجهة تطبيق "حنكك" الرئيسية (MAIN APP)  -->
+    <!-- ========================================== -->
+    <div id="mainAppScreen" class="hidden screen-transition opacity-0 bg-surface min-h-screen">
+
+        <!-- 1. الشريط العلوي (Navbar) -->
+        <header class="fixed top-0 inset-x-0 h-14 bg-white shadow-sm z-50 px-3 sm:px-4 flex items-center justify-between border-b border-gray-200">
+            <!-- اليمين: الشعار وشريط البحث -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- شعار حنكك -->
+                <a href="#" onclick="resetFeed(event)" class="flex items-center gap-2 group">
+                    <div class="w-10 h-10 rounded-full bg-fbBlue flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform">
+                        <svg class="w-5 h-5 text-white fill-current" viewBox="0 0 100 100">
+                            <path d="M22 16C22 13.7909 23.7909 12 26 12H36C38.2091 12 40 13.7909 40 16V41H60V16C60 13.7909 61.7909 12 64 12H74C76.2091 12 78 13.7909 78 16V84C78 86.2091 76.2091 88 74 88H64C61.7909 88 60 86.2091 60 84V57H40V84C40 86.2091 38.2091 88 36 88H26C23.7909 88 22 86.2091 22 84V16Z"/>
+                        </svg>
+                    </div>
+                    <span class="text-2xl font-extrabold text-brand-500 tracking-tight hidden sm:block">حنكك</span>
+                </a>
+
+                <!-- شريط البحث -->
+                <div class="relative">
+                    <div class="flex items-center bg-surface rounded-full px-3 py-2 w-10 sm:w-60 md:w-64 focus-within:w-56 sm:focus-within:w-72 transition-all duration-200">
+                        <i class="fa-solid fa-magnifying-glass text-gray-500 text-sm"></i>
+                        <input type="text" id="searchInput" onkeyup="filterPosts()" placeholder="ابحث في حنكك..." 
+                               class="bg-transparent border-none outline-none text-sm mr-2 w-full text-gray-700 placeholder-gray-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- الوسط: أيقونات التنقل الرئيسية -->
+            <nav class="hidden md:flex items-center justify-center h-full flex-1 max-w-xl mx-4">
+                <button onclick="setActiveTab(this, 'home')" class="nav-tab active relative h-full flex-1 flex items-center justify-center text-brand-500 border-b-[3px] border-brand-500 hover:bg-gray-100 rounded-t-lg transition-colors" title="الرئيسية">
+                    <i class="fa-solid fa-house text-xl"></i>
+                </button>
+                <button onclick="setActiveTab(this, 'friends')" class="nav-tab relative h-full flex-1 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-lg transition-colors" title="الأصدقاء">
+                    <i class="fa-solid fa-user-group text-xl"></i>
+                    <span class="absolute top-2 right-1/3 bg-red-500 text-white text-[10px] font-bold px-1.5 rounded-full">3</span>
+                </button>
+                <button onclick="setActiveTab(this, 'watch')" class="nav-tab relative h-full flex-1 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-lg transition-colors" title="فيديو">
+                    <i class="fa-solid fa-tv text-xl"></i>
+                </button>
+                <button onclick="setActiveTab(this, 'groups')" class="nav-tab relative h-full flex-1 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-lg transition-colors" title="المجموعات">
+                    <i class="fa-solid fa-users-rectangle text-xl"></i>
+                </button>
+            </nav>
+
+            <!-- اليسار: الإشعارات، الرسائل، الملف الشخصي، وتسجيل الخروج -->
+            <div class="flex items-center gap-1.5 sm:gap-2">
+                <!-- زر القائمة للموبايل -->
+                <button onclick="toggleMobileSidebar()" class="lg:hidden w-10 h-10 rounded-full bg-surface hover:bg-gray-200 flex items-center justify-center text-gray-700 transition-colors">
+                    <i class="fa-solid fa-bars text-lg"></i>
+                </button>
+
+                <!-- زر الرسائل -->
+                <div class="relative">
+                    <button onclick="toggleDropdown('messagesDropdown')" class="w-10 h-10 rounded-full bg-surface hover:bg-gray-200 flex items-center justify-center text-gray-800 transition-colors relative" title="الرسائل">
+                        <i class="fa-brands fa-facebook-messenger text-lg"></i>
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[11px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white">2</span>
+                    </button>
+                    <!-- قائمة الرسائل المنسدلة -->
+                    <div id="messagesDropdown" class="hidden absolute left-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-100 p-3 z-50">
+                        <div class="flex items-center justify-between pb-2 mb-2 border-b">
+                            <h3 class="font-bold text-lg">الدردشات</h3>
+                            <span class="text-xs text-brand-500 cursor-pointer hover:underline">تحديد الكل كمقروء</span>
+                        </div>
+                        <div class="space-y-2 max-h-72 overflow-y-auto">
+                            <div onclick="openChat('كريم محمود', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80')" class="flex items-center gap-3 p-2 hover:bg-surface rounded-lg cursor-pointer transition-colors">
+                                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80" alt="كريم" class="w-11 h-11 rounded-full object-cover">
+                                <div class="flex-1 min-w-0">
+                                    <p class="font-semibold text-sm text-gray-900 truncate">كريم محمود</p>
+                                    <p class="text-xs text-brand-600 font-semibold truncate">يا عم فينك هننزل القهوة امتى؟ • 5 د</p>
+                                </div>
+                                <span class="w-2.5 h-2.5 bg-brand-500 rounded-full"></span>
+                            </div>
+                            <div onclick="openChat('سارة أحمد', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80')" class="flex items-center gap-3 p-2 hover:bg-surface rounded-lg cursor-pointer transition-colors">
+                                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80" alt="سارة" class="w-11 h-11 rounded-full object-cover">
+                                <div class="flex-1 min-w-0">
+                                    <p class="font-semibold text-sm text-gray-900 truncate">سارة أحمد</p>
+                                    <p class="text-xs text-gray-500 truncate">بعتلك ملفات المشروع الجديد على الإيميل • 1 س</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- زر الإشعارات -->
+                <div class="relative">
+                    <button onclick="toggleDropdown('notificationsDropdown')" class="w-10 h-10 rounded-full bg-surface hover:bg-gray-200 flex items-center justify-center text-gray-800 transition-colors relative" title="الإشعارات">
+                        <i class="fa-solid fa-bell text-lg"></i>
+                        <span id="notifBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[11px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white">4</span>
+                    </button>
+                    <!-- قائمة الإشعارات المنسدلة -->
+                    <div id="notificationsDropdown" class="hidden absolute left-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-100 p-3 z-50">
+                        <div class="flex items-center justify-between pb-2 mb-2 border-b">
+                            <h3 class="font-bold text-lg">الإشعارات</h3>
+                            <button onclick="clearNotifications()" class="text-xs text-brand-500 hover:underline">مسح الكل</button>
+                        </div>
+                        <div id="notifList" class="space-y-2 max-h-72 overflow-y-auto">
+                            <div class="flex items-start gap-3 p-2 bg-brand-50/60 hover:bg-surface rounded-lg cursor-pointer transition-colors">
+                                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80" class="w-10 h-10 rounded-full object-cover">
+                                <div class="text-xs">
+                                    <p class="text-gray-800"><span class="font-bold">عمر طارق</span> أعجب بمنشورك: "أحلى كوباية شاي في البلكونة..."</p>
+                                    <span class="text-brand-600 font-semibold mt-1 block">منذ 12 دقيقة</span>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3 p-2 hover:bg-surface rounded-lg cursor-pointer transition-colors">
+                                <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&auto=format&fit=crop&q=80" class="w-10 h-10 rounded-full object-cover">
+                                <div class="text-xs">
+                                    <p class="text-gray-800"><span class="font-bold">نور الهدى</span> علقت على صورتك: "ما شاء الله منور يا هندسة!"</p>
+                                    <span class="text-gray-400 mt-1 block">منذ ساعة</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- الملف الشخصي وقائمة الحساب -->
+                <div class="relative">
+                    <button onclick="toggleDropdown('accountDropdown')" class="flex items-center gap-2 hover:bg-surface p-1 pl-2 rounded-full transition-colors">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" 
+                             onerror="this.src='https://placehold.co/100x100/1877f2/ffffff?text=ح'"
+                             alt="المستخدم" class="w-9 h-9 rounded-full object-cover border border-gray-200">
+                        <span id="navUserName" class="font-semibold text-sm hidden xl:block text-gray-800">أحمد</span>
+                        <i class="fa-solid fa-chevron-down text-[10px] text-gray-500 hidden sm:block"></i>
+                    </button>
+
+                    <!-- قائمة الحساب المنسدلة (تتضمن تسجيل الخروج) -->
+                    <div id="accountDropdown" class="hidden absolute left-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 p-2 z-50">
+                        <div class="flex items-center gap-3 p-2.5 rounded-lg bg-surface/60 mb-2">
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" class="w-10 h-10 rounded-full object-cover">
+                            <div class="min-w-0">
+                                <p id="dropdownUserFullName" class="font-bold text-sm text-gray-900 truncate">أحمد المنصوري</p>
+                                <p class="text-xs text-gray-500">عرض ملفك الشخصي</p>
+                            </div>
+                        </div>
+                        <hr class="my-1.5 border-gray-100">
+                        <button onclick="logoutToSplash()" class="w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-100 text-gray-700 text-sm font-semibold transition-colors text-right">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 text-brand-600 flex items-center justify-center">
+                                <i class="fa-solid fa-rotate-left text-sm"></i>
+                            </div>
+                            <span>العودة لشاشة البداية</span>
+                        </button>
+                        <button onclick="logoutUser()" class="w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-red-50 text-red-600 text-sm font-bold transition-colors text-right mt-1">
+                            <div class="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center">
+                                <i class="fa-solid fa-right-from-bracket text-sm"></i>
+                            </div>
+                            <span>تسجيل الخروج</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- الحاوية الرئيسية للتطبيق -->
+        <div class="pt-14 flex justify-between max-w-[1600px] mx-auto min-h-screen">
+
+            <!-- 2. القائمة الجانبية اليمنى (للتنقل السريع) -->
+            <aside id="rightSidebar" class="fixed lg:sticky top-14 right-0 w-72 h-[calc(100vh-3.5rem)] bg-white lg:bg-transparent shadow-2xl lg:shadow-none z-40 transform translate-x-full lg:translate-x-0 transition-transform duration-300 overflow-y-auto custom-scrollbar p-3">
+                <ul class="space-y-1">
+                    <!-- الملف الشخصي -->
+                    <li>
+                        <a href="#" onclick="event.preventDefault(); showToast('أنت تتصفح حساب: ' + currentUser.name)" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-200/70 transition-colors">
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" alt="المستخدم" class="w-9 h-9 rounded-full object-cover">
+                            <span id="sidebarUserFullName" class="font-bold text-gray-800 text-[15px]">أحمد المنصوري</span>
+                        </a>
+                    </li>
+                    <!-- الأصدقاء -->
+                    <li>
+                        <a href="#" onclick="event.preventDefault(); filterCategory('friends')" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-200/70 transition-colors">
+                            <div class="w-9 h-9 rounded-full bg-blue-100 text-brand-500 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-user-group"></i>
+                            </div>
+                            <span class="font-semibold text-gray-700 text-[15px]">الأصدقاء</span>
+                        </a>
+                    </li>
+                    <!-- المجموعات -->
+                    <li>
+                        <a href="#" onclick="event.preventDefault(); filterCategory('groups')" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-200/70 transition-colors">
+                            <div class="w-9 h-9 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-users"></i>
+                            </div>
+                            <span class="font-semibold text-gray-700 text-[15px]">المجموعات</span>
+                        </a>
+                    </li>
+                    <!-- الذكريات -->
+                    <li>
+                        <a href="#" onclick="event.preventDefault(); showToast('لديك 3 ذكريات جميلة من مثل هذا اليوم!')" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-200/70 transition-colors">
+                            <div class="w-9 h-9 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                            </div>
+                            <span class="font-semibold text-gray-700 text-[15px]">الذكريات</span>
+                        </a>
+                    </li>
+                    <!-- المحفوظات -->
+                    <li>
+                        <a href="#" onclick="event.preventDefault(); filterSavedPosts()" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-200/70 transition-colors">
+                            <div class="w-9 h-9 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-bookmark"></i>
+                            </div>
+                            <span class="font-semibold text-gray-700 text-[15px]">المحفوظات</span>
+                        </a>
+                    </li>
+                    <!-- الفعاليات -->
+                    <li>
+                        <a href="#" onclick="event.preventDefault(); showToast('لا توجد فعاليات قادمة في منطقتك اليوم')" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-200/70 transition-colors">
+                            <div class="w-9 h-9 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-calendar-days"></i>
+                            </div>
+                            <span class="font-semibold text-gray-700 text-[15px]">الفعاليات</span>
+                        </a>
+                    </li>
+                    <!-- تسجيل الخروج من القائمة الجانبية أيضاً -->
+                    <li>
+                        <button onclick="logoutUser()" class="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-red-50 text-red-600 transition-colors text-right">
+                            <div class="w-9 h-9 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-right-from-bracket"></i>
+                            </div>
+                            <span class="font-bold text-[15px]">تسجيل الخروج</span>
+                        </button>
+                    </li>
+                </ul>
+
+                <hr class="my-3 border-gray-300/80">
+
+                <!-- اختصاراتك -->
+                <div class="px-2">
+                    <h3 class="text-gray-500 font-bold text-sm mb-2">اختصاراتك المفضلة</h3>
+                    <ul class="space-y-1">
+                        <li>
+                            <a href="#" onclick="event.preventDefault(); showToast('تم فتح مجتمع المبرمجين العرب')" class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-200/70 transition-colors">
+                                <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=100&auto=format&fit=crop&q=60" class="w-8 h-8 rounded-lg object-cover">
+                                <span class="font-semibold text-gray-700 text-sm">مجتمع المبرمجين العرب 💻</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" onclick="event.preventDefault(); showToast('تم فتح جروب عشاق القهوة والسفر')" class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-200/70 transition-colors">
+                                <img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=100&auto=format&fit=crop&q=60" class="w-8 h-8 rounded-lg object-cover">
+                                <span class="font-semibold text-gray-700 text-sm">عشاق القهوة والسفر ☕✈️</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" onclick="event.preventDefault(); showToast('تم فتح جروب الدوري المصري والممتاز')" class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-200/70 transition-colors">
+                                <img src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=100&auto=format&fit=crop&q=60" class="w-8 h-8 rounded-lg object-cover">
+                                <span class="font-semibold text-gray-700 text-sm">كورة وبس ⚽🔥</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <footer class="mt-6 px-2 text-xs text-gray-400 leading-relaxed">
+                    الخصوصية · الشروط · الإعلانات · ملفات تعريف الارتباط · حنكك © 2026
+                </footer>
+            </aside>
+
+            <!-- 3. المساحة المركزية (القصص + إنشاء منشور + خلاصة الأخبار) -->
+            <main class="flex-1 max-w-[640px] mx-auto px-3 sm:px-4 py-5 w-full">
+
+                <!-- قسم القصص (Stories) -->
+                <section aria-label="القصص" class="mb-5">
+                    <div class="flex gap-2.5 overflow-x-auto no-scrollbar pb-1">
+                        <!-- بطاقة إنشاء قصة -->
+                        <div onclick="openStoryCreator()" class="relative flex-shrink-0 w-28 sm:w-32 h-48 rounded-2xl bg-white shadow-sm overflow-hidden cursor-pointer group border border-gray-200">
+                            <div class="h-3/4 overflow-hidden">
+                                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80" alt="قصتك" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                            </div>
+                            <div class="h-1/4 bg-white relative flex flex-col items-center justify-end pb-2">
+                                <div class="absolute -top-5 w-9 h-9 rounded-full bg-brand-500 text-white border-4 border-white flex items-center justify-center shadow">
+                                    <i class="fa-solid fa-plus text-sm"></i>
+                                </div>
+                                <span class="text-xs font-bold text-gray-800">إنشاء قصة</span>
+                            </div>
+                        </div>
+
+                        <!-- قصص الأصدقاء (يتم توليدها ديناميكياً) -->
+                        <div id="storiesContainer" class="flex gap-2.5"></div>
+                    </div>
+                </section>
+
+                <!-- صندوق إنشاء منشور جديد -->
+                <section class="bg-white rounded-2xl shadow-sm p-4 mb-5 border border-gray-100">
+                    <div class="flex items-center gap-3 pb-3 border-b border-gray-100">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" alt="المستخدم" class="w-10 h-10 rounded-full object-cover">
+                        <div class="flex-1">
+                            <textarea id="postInput" rows="2" placeholder="بماذا تفكر يا أحمد؟ شاركنا أفكارك أو يومك..." 
+                                      class="w-full bg-surface hover:bg-gray-200/70 focus:bg-white focus:ring-2 focus:ring-brand-500/30 rounded-2xl px-4 py-2.5 text-sm sm:text-base outline-none resize-none transition-all"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- حقل اختيار صورة (مخفي ويظهر عند الضغط على زر صورة) -->
+                    <div id="imageInputContainer" class="hidden mt-3 p-3 bg-surface rounded-xl border border-dashed border-gray-300">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold text-gray-600">اختر صورة جاهزة أو أضف رابط صورة:</span>
+                            <button onclick="toggleImageInput()" class="text-gray-400 hover:text-red-500 text-xs"><i class="fa-solid fa-xmark"></i> إغلاق</button>
+                        </div>
+                        <input type="text" id="postImageUrl" placeholder="ضع رابط الصورة هنا (https://...)" class="w-full bg-white text-xs p-2 rounded-lg border border-gray-200 outline-none mb-2 text-left" dir="ltr">
+                        <div class="flex gap-2 overflow-x-auto pb-1">
+                            <button type="button" onclick="selectPresetImage('https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&auto=format&fit=crop&q=80')" class="text-xs bg-white px-2.5 py-1 rounded-md border hover:border-brand-500 whitespace-nowrap">☕ قهوة الصباح</button>
+                            <button type="button" onclick="selectPresetImage('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80')" class="text-xs bg-white px-2.5 py-1 rounded-md border hover:border-brand-500 whitespace-nowrap">🏖️ البحر والصيف</button>
+                            <button type="button" onclick="selectPresetImage('https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&auto=format&fit=crop&q=80')" class="text-xs bg-white px-2.5 py-1 rounded-md border hover:border-brand-500 whitespace-nowrap">💻 برمجة وشغل</button>
+                        </div>
+                    </div>
+
+                    <!-- شريط الإيموجي السريع -->
+                    <div id="emojiBar" class="hidden mt-2 flex items-center gap-2 bg-surface px-3 py-1.5 rounded-xl overflow-x-auto">
+                        <span class="text-xs text-gray-500 font-semibold">إضافة شعور:</span>
+                        <button onclick="addEmoji('😂')" class="hover:scale-125 transition-transform text-lg">😂</button>
+                        <button onclick="addEmoji('❤️')" class="hover:scale-125 transition-transform text-lg">❤️</button>
+                        <button onclick="addEmoji('🔥')" class="hover:scale-125 transition-transform text-lg">🔥</button>
+                        <button onclick="addEmoji('😎')" class="hover:scale-125 transition-transform text-lg">😎</button>
+                        <button onclick="addEmoji('☕')" class="hover:scale-125 transition-transform text-lg">☕</button>
+                        <button onclick="addEmoji('🎉')" class="hover:scale-125 transition-transform text-lg">🎉</button>
+                        <button onclick="addEmoji('🤲')" class="hover:scale-125 transition-transform text-lg">🤲</button>
+                        <button onclick="addEmoji('🚀')" class="hover:scale-125 transition-transform text-lg">🚀</button>
+                    </div>
+
+                    <!-- أزرار التحكم بالمنشور -->
+                    <div class="flex items-center justify-between pt-3">
+                        <div class="flex items-center gap-1 sm:gap-2">
+                            <button onclick="toggleImageInput()" class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-surface text-gray-600 text-xs sm:text-sm font-semibold transition-colors">
+                                <i class="fa-solid fa-images text-green-500 text-lg"></i>
+                                <span>صورة / فيديو</span>
+                            </button>
+                            <button onclick="toggleEmojiBar()" class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-surface text-gray-600 text-xs sm:text-sm font-semibold transition-colors">
+                                <i class="fa-regular fa-face-laugh-beam text-amber-500 text-lg"></i>
+                                <span>شعور / إيموجي</span>
+                            </button>
+                        </div>
+                        <button onclick="createNewPost()" class="bg-brand-500 hover:bg-brand-600 active:scale-95 text-white font-bold px-5 py-2 rounded-xl text-sm shadow-sm transition-all flex items-center gap-2">
+                            <span>نشر</span>
+                            <i class="fa-solid fa-paper-plane text-xs"></i>
+                        </button>
+                    </div>
+                </section>
+
+                <!-- شريط حالة الفلترة (يظهر عند البحث أو عرض المحفوظات) -->
+                <div id="feedFilterBanner" class="hidden mb-4 bg-blue-50 border border-blue-200 text-brand-700 px-4 py-2.5 rounded-xl flex items-center justify-between text-sm">
+                    <span id="feedFilterText" class="font-semibold">عرض المنشورات المحفوظة</span>
+                    <button onclick="resetFeed(event)" class="text-xs bg-white px-2.5 py-1 rounded-lg shadow-sm font-bold hover:bg-gray-50">عرض الكل</button>
+                </div>
+
+                <!-- خلاصة الأخبار (News Feed) -->
+                <section id="newsFeed" class="space-y-4">
+                    <!-- المنشورات يتم حقنها هنا عبر الجافاسكريبت -->
+                </section>
+            </main>
+
+            <!-- 4. القائمة الجانبية اليسرى (جهات الاتصال المتصلة + اقتراحات الصداقة) -->
+            <aside class="hidden xl:block sticky top-14 left-0 w-72 h-[calc(100vh-3.5rem)] overflow-y-auto custom-scrollbar p-3">
+                
+                <!-- اقتراحات الصداقة -->
+                <div class="bg-white rounded-2xl p-3.5 shadow-sm border border-gray-100 mb-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-bold text-gray-700 text-sm">أشخاص قد تعرفهم</h3>
+                        <span class="text-xs text-brand-500 font-semibold cursor-pointer hover:underline">عرض الكل</span>
+                    </div>
+                    <div id="friendSuggestions" class="space-y-3">
+                        <!-- اقتراح 1 -->
+                        <div class="flex items-center justify-between gap-2" id="sugg-1">
+                            <div class="flex items-center gap-2.5 min-w-0">
+                                <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=80" alt="طارق" class="w-10 h-10 rounded-full object-cover flex-shrink-0">
+                                <div class="min-w-0">
+                                    <p class="font-bold text-xs text-gray-800 truncate">م. طارق الشناوي</p>
+                                    <p class="text-[11px] text-gray-400">12 صديق مشترك</p>
+                                </div>
+                            </div>
+                            <button onclick="addFriend('sugg-1', 'م. طارق الشناوي')" class="bg-brand-50 hover:bg-brand-500 text-brand-600 hover:text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors flex-shrink-0">
+                                إضافة
+                            </button>
+                        </div>
+                        <!-- اقتراح 2 -->
+                        <div class="flex items-center justify-between gap-2" id="sugg-2">
+                            <div class="flex items-center gap-2.5 min-w-0">
+                                <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80" alt="مريم" class="w-10 h-10 rounded-full object-cover flex-shrink-0">
+                                <div class="min-w-0">
+                                    <p class="font-bold text-xs text-gray-800 truncate">مريم عبد الرحمن</p>
+                                    <p class="text-[11px] text-gray-400">5 أصدقاء مشتركين</p>
+                                </div>
+                            </div>
+                            <button onclick="addFriend('sugg-2', 'مريم عبد الرحمن')" class="bg-brand-50 hover:bg-brand-500 text-brand-600 hover:text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors flex-shrink-0">
+                                إضافة
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- جهات الاتصال المتصلة حالياً -->
+                <div>
+                    <div class="flex items-center justify-between px-2 mb-2">
+                        <h3 class="font-bold text-gray-500 text-sm">جهات الاتصال المتصلة</h3>
+                        <div class="flex items-center gap-2 text-gray-500 text-xs">
+                            <i class="fa-solid fa-video cursor-pointer hover:text-gray-800" title="غرفة فيديو"></i>
+                            <i class="fa-solid fa-magnifying-glass cursor-pointer hover:text-gray-800" title="بحث"></i>
+                        </div>
+                    </div>
+                    <ul id="onlineContactsList" class="space-y-1">
+                        <!-- يتم توليد الأصدقاء المتصلين هنا -->
+                    </ul>
+                </div>
+            </aside>
+        </div>
+
+        <!-- نافذة عرض القصة (Story Viewer Modal) -->
+        <div id="storyModal" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
+            <div class="relative w-full max-w-sm h-[80vh] bg-gray-900 rounded-2xl overflow-hidden shadow-2xl flex flex-col justify-between">
+                <!-- شريط التقدم -->
+                <div class="p-3 z-10 bg-gradient-to-b from-black/70 to-transparent">
+                    <div class="w-full h-1 bg-white/30 rounded-full overflow-hidden mb-3">
+                        <div id="storyProgress" class="h-full bg-white w-0 transition-all duration-100"></div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <img id="storyUserImg" src="" class="w-9 h-9 rounded-full object-cover border-2 border-brand-500">
+                            <div>
+                                <p id="storyUserName" class="text-white font-bold text-sm"></p>
+                                <p class="text-gray-300 text-[11px]">منذ ساعتين</p>
+                            </div>
+                        </div>
+                        <button onclick="closeStoryModal()" class="text-white/80 hover:text-white w-8 h-8 rounded-full bg-black/40 flex items-center justify-center">
+                            <i class="fa-solid fa-xmark text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- صورة القصة -->
+                <img id="storyImage" src="" class="absolute inset-0 w-full h-full object-cover">
+
+                <!-- نص القصة والرد -->
+                <div class="p-4 z-10 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+                    <p id="storyCaption" class="text-white text-center font-semibold text-base mb-3 drop-shadow"></p>
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="storyReplyInput" placeholder="أرسل رداً سريعاً..." class="flex-1 bg-white/20 backdrop-blur-md text-white placeholder-gray-200 text-xs px-4 py-2.5 rounded-full border border-white/30 outline-none">
+                        <button onclick="sendStoryReply()" class="w-9 h-9 rounded-full bg-brand-500 text-white flex items-center justify-center hover:bg-brand-600">
+                            <i class="fa-solid fa-paper-plane text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- نافذة الدردشة المصغرة (Mini Chat Box) -->
+        <div id="miniChatBox" class="hidden fixed bottom-0 left-4 sm:left-8 w-80 bg-white rounded-t-2xl shadow-2xl border border-gray-200 z-40 overflow-hidden">
+            <div class="bg-brand-500 text-white px-3.5 py-2.5 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="relative">
+                        <img id="chatUserImg" src="" class="w-8 h-8 rounded-full object-cover">
+                        <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 border-2 border-brand-500 rounded-full"></span>
+                    </div>
+                    <div>
+                        <p id="chatUserName" class="font-bold text-xs"></p>
+                        <p class="text-[10px] text-blue-100">نشط الآن</p>
+                    </div>
+                </div>
+                <button onclick="closeChat()" class="text-white/80 hover:text-white">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div id="chatMessages" class="h-60 p-3 overflow-y-auto space-y-2 bg-gray-50 text-xs">
+                <div class="bg-gray-200 text-gray-800 p-2.5 rounded-2xl rounded-tr-none max-w-[80%]">
+                    أهلاً يا هندسة! أخبارك إيه النهاردة؟ 👋
+                </div>
+            </div>
+            <form onsubmit="sendChatMessage(event)" class="p-2 bg-white border-t flex items-center gap-2">
+                <input type="text" id="chatInput" placeholder="اكتب رسالة..." class="flex-1 bg-surface rounded-full px-3 py-1.5 text-xs outline-none">
+                <button type="submit" class="text-brand-500 hover:text-brand-600 px-2">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- خلفية مظلمة للقائمة الجانبية في الموبايل -->
+        <div id="mobileOverlay" onclick="toggleMobileSidebar()" class="hidden fixed inset-0 bg-black/50 z-30 lg:hidden"></div>
+
+    </div>
+
+    <!-- إشعار Toast منبثق موحد بدلاً من alert() -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <script>
+        // ================= 1. إدارة الشاشات والمصادقة (Splash & Auth) =================
+        let isCircle = true;
+        let loadTimer = null;
+
+        const splashScreen = document.getElementById('splashScreen');
+        const loginScreen = document.getElementById('loginScreen');
+        const mainAppScreen = document.getElementById('mainAppScreen');
+        const logoContainer = document.getElementById('logoContainer');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const actionArea = document.getElementById('actionArea');
+        const shapeBtn = document.getElementById('shapeBtn');
+        const previewControls = document.getElementById('previewControls');
+
+        // بيانات المستخدم الحالي (قابلة للتحديث عند تسجيل الدخول)
+        const currentUser = {
+            name: "أحمد المنصوري",
+            firstName: "أحمد",
+            avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
+        };
+
+        // تحديث واجهة التطبيق باسم المستخدم
+        function updateUserProfileUI(fullName) {
+            const cleanName = fullName.trim() || "أحمد المنصوري";
+            const firstName = cleanName.split(' ')[0];
+            currentUser.name = cleanName;
+            currentUser.firstName = firstName;
+
+            document.getElementById('navUserName').textContent = firstName;
+            document.getElementById('dropdownUserFullName').textContent = cleanName;
+            document.getElementById('sidebarUserFullName').textContent = cleanName;
+            document.getElementById('postInput').placeholder = `بماذا تفكر يا ${firstName}؟ شاركنا أفكارك أو يومك...`;
+        }
+
+        // بدء مؤقت التحميل في شاشة البداية
+        function startLoadingSequence() {
+            clearTimeout(loadTimer);
+            
+            loadingIndicator.classList.remove('hidden', 'opacity-0');
+            actionArea.classList.add('hidden');
+            actionArea.classList.remove('flex');
+            
+            logoContainer.classList.remove('animate-logo-entrance', 'animate-subtle-pulse');
+            void logoContainer.offsetWidth;
+            logoContainer.classList.add('animate-logo-entrance', 'animate-subtle-pulse');
+
+            loadTimer = setTimeout(() => {
+                loadingIndicator.classList.add('opacity-0');
+                setTimeout(() => {
+                    loadingIndicator.classList.add('hidden');
+                    actionArea.classList.remove('hidden');
+                    actionArea.classList.add('flex');
+                }, 250);
+            }, 2200);
+        }
+
+        // التبديل بين الشكل الدائري والمربع ذو الحواف الدائرية
+        function toggleShape() {
+            isCircle = !isCircle;
+            if (isCircle) {
+                logoContainer.classList.remove('rounded-3xl');
+                logoContainer.classList.add('rounded-full');
+                shapeBtn.textContent = 'الشكل: دائري';
+            } else {
+                logoContainer.classList.remove('rounded-full');
+                logoContainer.classList.add('rounded-3xl');
+                shapeBtn.textContent = 'الشكل: مربع دائري';
+            }
+        }
+
+        // إعادة تشغيل شاشة البداية
+        function replaySplash() {
+            if (!splashScreen.classList.contains('hidden')) {
+                startLoadingSequence();
+            }
+        }
+
+        // الانتقال من شاشة البداية إلى شاشة تسجيل الدخول
+        function enterLoginScreen() {
+            splashScreen.classList.add('opacity-0', 'scale-95');
+            previewControls.classList.add('opacity-0', 'pointer-events-none');
+            
+            setTimeout(() => {
+                splashScreen.classList.add('hidden');
+                loginScreen.classList.remove('hidden');
+                
+                requestAnimationFrame(() => {
+                    loginScreen.classList.remove('opacity-0', 'translate-y-4');
+                });
+            }, 400);
+        }
+
+        // العودة لشاشة البداية من شاشة تسجيل الدخول
+        function backToSplash() {
+            loginScreen.classList.add('opacity-0', 'translate-y-4');
+            
+            setTimeout(() => {
+                loginScreen.classList.add('hidden');
+                splashScreen.classList.remove('hidden');
+                previewControls.classList.remove('opacity-0', 'pointer-events-none');
+                
+                requestAnimationFrame(() => {
+                    splashScreen.classList.remove('opacity-0', 'scale-95');
+                    startLoadingSequence();
+                });
+            }, 400);
+        }
+
+        // التبديل بين نموذج تسجيل الدخول ونموذج إنشاء حساب جديد
+        function toggleAuthMode(mode) {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const createAccountBtn = document.getElementById('createAccountBtn');
+            const forgotPassSection = document.getElementById('forgotPassSection');
+
+            if (mode === 'register') {
+                loginForm.classList.add('hidden');
+                forgotPassSection.classList.add('hidden');
+                createAccountBtn.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+            } else {
+                registerForm.classList.add('hidden');
+                loginForm.classList.remove('hidden');
+                forgotPassSection.classList.remove('hidden');
+                createAccountBtn.classList.remove('hidden');
+            }
+        }
+
+        // الانتقال السلس إلى واجهة تطبيق حنكك الرئيسية
+        function launchMainApp(userName) {
+            updateUserProfileUI(userName);
+            loginScreen.classList.add('opacity-0', 'scale-95');
+            
+            setTimeout(() => {
+                loginScreen.classList.add('hidden');
+                mainAppScreen.classList.remove('hidden');
+                document.body.style.backgroundColor = '#f0f2f5';
+                
+                requestAnimationFrame(() => {
+                    mainAppScreen.classList.remove('opacity-0');
+                });
+                
+                renderStories();
+                renderOnlineContacts();
+                renderPosts();
+                showToast(`أهلاً بك في حنكك يا ${currentUser.firstName}! 👋`);
+            }, 400);
+        }
+
+        // معالجة نموذج تسجيل الدخول
+        function handleLogin(e) {
+            e.preventDefault();
+            const identifier = document.getElementById('loginIdentifier').value.trim();
+            // استخراج اسم مناسب إذا أدخل المستخدم بريداً إلكترونياً
+            let displayName = identifier;
+            if (identifier.includes('@')) {
+                displayName = identifier.split('@')[0];
+            } else if (/^\d+$/.test(identifier)) {
+                displayName = "مستخدم حنكك";
+            }
+            launchMainApp(displayName);
+        }
+
+        // معالجة نموذج إنشاء حساب جديد
+        function handleRegister(e) {
+            e.preventDefault();
+            const first = document.getElementById('regFirstName').value.trim();
+            const last = document.getElementById('regLastName').value.trim();
+            launchMainApp(`${first} ${last}`);
+        }
+
+        // دخول سريع للتجربة
+        function quickDemoLogin() {
+            launchMainApp("أحمد المنصوري");
+        }
+
+        // تسجيل الخروج والعودة لشاشة تسجيل الدخول
+        function logoutUser() {
+            document.getElementById('accountDropdown').classList.add('hidden');
+            closeChat();
+            mainAppScreen.classList.add('opacity-0');
+            
+            setTimeout(() => {
+                mainAppScreen.classList.add('hidden');
+                document.body.style.backgroundColor = '#ffffff';
+                loginScreen.classList.remove('hidden', 'scale-95');
+                
+                requestAnimationFrame(() => {
+                    loginScreen.classList.remove('opacity-0', 'translate-y-4');
+                });
+                showToast('تم تسجيل الخروج بنجاح');
+            }, 400);
+        }
+
+        // العودة لشاشة البداية من داخل التطبيق
+        function logoutToSplash() {
+            document.getElementById('accountDropdown').classList.add('hidden');
+            closeChat();
+            mainAppScreen.classList.add('opacity-0');
+            
+            setTimeout(() => {
+                mainAppScreen.classList.add('hidden');
+                document.body.style.backgroundColor = '#ffffff';
+                splashScreen.classList.remove('hidden');
+                previewControls.classList.remove('opacity-0', 'pointer-events-none');
+                
+                requestAnimationFrame(() => {
+                    splashScreen.classList.remove('opacity-0', 'scale-95');
+                    startLoadingSequence();
+                });
+            }, 400);
+        }
+
+        // ================= 2. بيانات تطبيق حنكك =================
+        const storiesData = [
+            {
+                id: 1,
+                user: "سارة أحمد",
+                avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
+                image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80",
+                caption: "أجواء إسكندرية الصبح ملهاش حل 🌊☀️"
+            },
+            {
+                id: 2,
+                user: "كريم محمود",
+                avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+                image: "https://images.unsplash.com/photo-1511920170033-f8396924c348?w=600&auto=format&fit=crop&q=80",
+                caption: "قهوة التركيز قبل الشغل ☕💻"
+            },
+            {
+                id: 3,
+                user: "نور الهدى",
+                avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&auto=format&fit=crop&q=80",
+                image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600&auto=format&fit=crop&q=80",
+                caption: "أحلى بيتزا مع الصحاب 🍕❤️"
+            },
+            {
+                id: 4,
+                user: "عمر طارق",
+                avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
+                image: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=600&auto=format&fit=crop&q=80",
+                caption: "طريق السفر والمغامرة الجديدة 🚗🏜️"
+            }
+        ];
+
+        let postsData = [
+            {
+                id: 101,
+                author: "كريم محمود",
+                avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+                time: "منذ 25 دقيقة",
+                privacy: "عام",
+                content: "يا جماعة مفيش أحلى من كوباية شاي بالنعناع في البلكونة بعد يوم شغل طويل.. تحس إن الدنيا لسه بخير والله! 🍵🌿 مين لسه صاحي زيي؟",
+                image: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=800&auto=format&fit=crop&q=80",
+                likes: 48,
+                isLiked: false,
+                isSaved: false,
+                shares: 5,
+                comments: [
+                    { author: "عمر طارق", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80", text: "ألف هنا يا صاحبي، احسب حسابي في كوباية المرة الجاية 😂", time: "منذ 15 د" },
+                    { author: "سارة أحمد", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80", text: "المنظر يفتح النفس بجد ✨", time: "منذ 8 د" }
+                ]
+            },
+            {
+                id: 102,
+                author: "سارة أحمد",
+                avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
+                time: "منذ ساعتين",
+                privacy: "الأصدقاء",
+                content: "الحمد لله خلصت تصميم واجهة المستخدم لمشروعي الجديد على منصة 'حنكك'! رأيكم يهمني جداً في الألوان وتجربة الاستخدام 🚀🎨",
+                image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&auto=format&fit=crop&q=80",
+                likes: 112,
+                isLiked: true,
+                isSaved: true,
+                shares: 14,
+                comments: [
+                    { author: "نور الهدى", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&auto=format&fit=crop&q=80", text: "شغل عالي ومرتب جداً بالتوفيق يا سارة ❤️👏", time: "منذ ساعة" }
+                ]
+            },
+            {
+                id: 103,
+                author: "عمر طارق",
+                avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
+                time: "منذ 5 ساعات",
+                privacy: "عام",
+                content: "نصيحة النهاردة: متأجلش فرحتك لبكرة، افرح بالإنجازات الصغيرة اللي بتعملها كل يوم، كل خطوة بتقربك لحلمك 💪🔥",
+                image: "",
+                likes: 89,
+                isLiked: false,
+                isSaved: false,
+                shares: 23,
+                comments: []
+            }
+        ];
+
+        const onlineContacts = [
+            { name: "كريم محمود", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80" },
+            { name: "سارة أحمد", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80" },
+            { name: "نور الهدى", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&auto=format&fit=crop&q=80" },
+            { name: "عمر طارق", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80" },
+            { name: "يوسف إبراهيم", avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80" },
+            { name: "ليلى حسن", avatar: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=150&auto=format&fit=crop&q=80" }
+        ];
+
+        // ================= 3. دوال العرض والتصيير =================
+        function renderStories() {
+            const container = document.getElementById('storiesContainer');
+            container.innerHTML = storiesData.map(story => `
+                <div onclick="openStory(${story.id})" class="relative flex-shrink-0 w-28 sm:w-32 h-48 rounded-2xl overflow-hidden cursor-pointer group shadow-sm">
+                    <img src="${story.image}" alt="${story.user}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                    <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/70"></div>
+                    <img src="${story.avatar}" alt="${story.user}" class="absolute top-2.5 right-2.5 w-9 h-9 rounded-full object-cover border-[3px] border-brand-500 shadow">
+                    <span class="absolute bottom-2.5 right-2.5 left-2.5 text-white text-xs font-bold truncate drop-shadow">${story.user}</span>
+                </div>
+            `).join('');
+        }
+
+        function renderOnlineContacts() {
+            const list = document.getElementById('onlineContactsList');
+            list.innerHTML = onlineContacts.map(contact => `
+                <li>
+                    <button onclick="openChat('${contact.name}', '${contact.avatar}')" class="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-gray-200/70 transition-colors text-right">
+                        <div class="relative flex-shrink-0">
+                            <img src="${contact.avatar}" alt="${contact.name}" class="w-9 h-9 rounded-full object-cover">
+                            <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
+                        </div>
+                        <span class="font-semibold text-gray-800 text-sm truncate">${contact.name}</span>
+                    </button>
+                </li>
+            `).join('');
+        }
+
+        function renderPosts(postsToRender = postsData) {
+            const feed = document.getElementById('newsFeed');
+            
+            if (postsToRender.length === 0) {
+                feed.innerHTML = `
+                    <div class="bg-white rounded-2xl p-8 text-center shadow-sm border border-gray-100">
+                        <i class="fa-regular fa-newspaper text-4xl text-gray-300 mb-3"></i>
+                        <p class="text-gray-500 font-semibold">لا توجد منشورات تطابق بحثك حالياً.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            feed.innerHTML = postsToRender.map(post => `
+                <article class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-all" id="post-${post.id}">
+                    <div class="p-4 pb-2 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <img src="${post.avatar}" alt="${post.author}" class="w-10 h-10 rounded-full object-cover border border-gray-100">
+                            <div>
+                                <h4 class="font-bold text-gray-900 text-[15px] hover:underline cursor-pointer">${post.author}</h4>
+                                <div class="flex items-center gap-1.5 text-xs text-gray-500">
+                                    <span>${post.time}</span>
+                                    <span>•</span>
+                                    <i class="fa-solid fa-earth-americas text-[11px]" title="${post.privacy}"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="toggleSavePost(${post.id})" class="w-8 h-8 rounded-full hover:bg-surface flex items-center justify-center text-gray-500 transition-colors" title="${post.isSaved ? 'إزالة من المحفوظات' : 'حفظ المنشور'}">
+                            <i class="${post.isSaved ? 'fa-solid text-brand-500' : 'fa-regular'} fa-bookmark"></i>
+                        </button>
+                    </div>
+
+                    <div class="px-4 py-2 text-gray-800 text-[15px] leading-relaxed whitespace-pre-line">
+                        ${post.content}
+                    </div>
+
+                    ${post.image ? `
+                        <div class="mt-2 bg-gray-100 max-h-[450px] overflow-hidden flex items-center justify-center">
+                            <img src="${post.image}" onerror="this.style.display='none'" alt="صورة المنشور" class="w-full object-cover">
+                        </div>
+                    ` : ''}
+
+                    <div class="px-4 py-2.5 flex items-center justify-between text-xs text-gray-500 border-b border-gray-100">
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-5 h-5 rounded-full bg-brand-500 text-white flex items-center justify-center text-[10px]">
+                                <i class="fa-solid fa-thumbs-up"></i>
+                            </span>
+                            <span id="likes-count-${post.id}" class="font-semibold text-gray-600">${post.likes}</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button onclick="toggleComments(${post.id})" class="hover:underline">
+                                <span id="comments-count-${post.id}">${post.comments.length}</span> تعليق
+                            </button>
+                            <span>${post.shares} مشاركة</span>
+                        </div>
+                    </div>
+
+                    <div class="px-2 py-1 grid grid-cols-3 gap-1 border-b border-gray-100">
+                        <button onclick="toggleLike(${post.id})" id="like-btn-${post.id}" 
+                                class="flex items-center justify-center gap-2 py-2 rounded-xl hover:bg-surface font-semibold text-sm transition-colors ${post.isLiked ? 'text-brand-500' : 'text-gray-600'}">
+                            <i class="${post.isLiked ? 'fa-solid' : 'fa-regular'} fa-thumbs-up text-lg"></i>
+                            <span>أعجبني</span>
+                        </button>
+                        <button onclick="toggleComments(${post.id})" 
+                                class="flex items-center justify-center gap-2 py-2 rounded-xl hover:bg-surface text-gray-600 font-semibold text-sm transition-colors">
+                            <i class="fa-regular fa-comment text-lg"></i>
+                            <span>تعليق</span>
+                        </button>
+                        <button onclick="sharePost(${post.id})" 
+                                class="flex items-center justify-center gap-2 py-2 rounded-xl hover:bg-surface text-gray-600 font-semibold text-sm transition-colors">
+                            <i class="fa-solid fa-share text-lg"></i>
+                            <span>مشاركة</span>
+                        </button>
+                    </div>
+
+                    <div id="comments-section-${post.id}" class="hidden bg-gray-50/70 p-3.5 space-y-3">
+                        <div id="comments-list-${post.id}" class="space-y-2.5">
+                            ${post.comments.map(c => `
+                                <div class="flex items-start gap-2">
+                                    <img src="${c.avatar}" class="w-8 h-8 rounded-full object-cover mt-0.5">
+                                    <div class="bg-surface px-3 py-2 rounded-2xl max-w-[85%]">
+                                        <p class="font-bold text-xs text-gray-900">${c.author}</p>
+                                        <p class="text-xs text-gray-800 mt-0.5 leading-relaxed">${c.text}</p>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <form onsubmit="addComment(event, ${post.id})" class="flex items-center gap-2 pt-1">
+                            <img src="${currentUser.avatar}" class="w-8 h-8 rounded-full object-cover">
+                            <div class="flex-1 flex items-center bg-surface rounded-full px-3 py-1.5 border border-gray-200 focus-within:border-brand-500 focus-within:bg-white transition-colors">
+                                <input type="text" id="comment-input-${post.id}" placeholder="اكتب تعليقاً..." class="bg-transparent w-full text-xs outline-none">
+                                <button type="submit" class="text-brand-500 hover:text-brand-600 mr-2">
+                                    <i class="fa-solid fa-paper-plane text-xs"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </article>
+            `).join('');
+        }
+
+        // ================= 4. التفاعلات والمنطق البرمجي =================
+        function createNewPost() {
+            const contentInput = document.getElementById('postInput');
+            const imageInput = document.getElementById('postImageUrl');
+            const content = contentInput.value.trim();
+            const imageUrl = imageInput.value.trim();
+
+            if (!content && !imageUrl) {
+                showToast('اكتب شيئاً أو أضف صورة أولاً لنشره!');
+                return;
+            }
+
+            const newPost = {
+                id: Date.now(),
+                author: currentUser.name,
+                avatar: currentUser.avatar,
+                time: "الآن",
+                privacy: "عام",
+                content: content,
+                image: imageUrl,
+                likes: 0,
+                isLiked: false,
+                isSaved: false,
+                shares: 0,
+                comments: []
+            };
+
+            postsData.unshift(newPost);
+            contentInput.value = '';
+            imageInput.value = '';
+            document.getElementById('imageInputContainer').classList.add('hidden');
+            document.getElementById('emojiBar').classList.add('hidden');
+
+            renderPosts();
+            showToast('تم نشر منشورك بنجاح على حنكك! 🎉');
+        }
+
+        function toggleLike(postId) {
+            const post = postsData.find(p => p.id === postId);
+            if (!post) return;
+
+            post.isLiked = !post.isLiked;
+            post.likes += post.isLiked ? 1 : -1;
+
+            const btn = document.getElementById(`like-btn-${postId}`);
+            const countSpan = document.getElementById(`likes-count-${postId}`);
+            const icon = btn.querySelector('i');
+
+            countSpan.textContent = post.likes;
+            if (post.isLiked) {
+                btn.classList.remove('text-gray-600');
+                btn.classList.add('text-brand-500');
+                icon.classList.remove('fa-regular');
+                icon.classList.add('fa-solid', 'animate-pop');
+            } else {
+                btn.classList.add('text-gray-600');
+                btn.classList.remove('text-brand-500');
+                icon.classList.add('fa-regular');
+                icon.classList.remove('fa-solid', 'animate-pop');
+            }
+        }
+
+        function toggleComments(postId) {
+            const section = document.getElementById(`comments-section-${postId}`);
+            section.classList.toggle('hidden');
+            if (!section.classList.contains('hidden')) {
+                document.getElementById(`comment-input-${postId}`).focus();
+            }
+        }
+
+        function addComment(event, postId) {
+            event.preventDefault();
+            const input = document.getElementById(`comment-input-${postId}`);
+            const text = input.value.trim();
+            if (!text) return;
+
+            const post = postsData.find(p => p.id === postId);
+            if (!post) return;
+
+            post.comments.push({
+                author: currentUser.name,
+                avatar: currentUser.avatar,
+                text: text,
+                time: "الآن"
+            });
+
+            input.value = '';
+            const list = document.getElementById(`comments-list-${postId}`);
+            const countSpan = document.getElementById(`comments-count-${postId}`);
+            
+            countSpan.textContent = post.comments.length;
+            list.insertAdjacentHTML('beforeend', `
+                <div class="flex items-start gap-2">
+                    <img src="${currentUser.avatar}" class="w-8 h-8 rounded-full object-cover mt-0.5">
+                    <div class="bg-surface px-3 py-2 rounded-2xl max-w-[85%]">
+                        <p class="font-bold text-xs text-gray-900">${currentUser.name}</p>
+                        <p class="text-xs text-gray-800 mt-0.5 leading-relaxed">${text}</p>
+                    </div>
+                </div>
+            `);
+        }
+
+        function sharePost(postId) {
+            const post = postsData.find(p => p.id === postId);
+            if (post) {
+                post.shares += 1;
+                renderPosts();
+                showToast('تمت مشاركة المنشور على صفحتك الشخصية! 🔄');
+            }
+        }
+
+        function toggleSavePost(postId) {
+            const post = postsData.find(p => p.id === postId);
+            if (post) {
+                post.isSaved = !post.isSaved;
+                renderPosts();
+                showToast(post.isSaved ? 'تم حفظ المنشور في المحفوظات 🔖' : 'تمت إزالة المنشور من المحفوظات');
+            }
+        }
+
+        function toggleImageInput() {
+            document.getElementById('imageInputContainer').classList.toggle('hidden');
+        }
+        function selectPresetImage(url) {
+            document.getElementById('postImageUrl').value = url;
+        }
+        function toggleEmojiBar() {
+            document.getElementById('emojiBar').classList.toggle('hidden');
+        }
+        function addEmoji(emoji) {
+            const input = document.getElementById('postInput');
+            input.value += emoji;
+            input.focus();
+        }
+
+        function filterPosts() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            if (!query) {
+                renderPosts(postsData);
+                return;
+            }
+            const filtered = postsData.filter(p => 
+                p.content.toLowerCase().includes(query) || 
+                p.author.toLowerCase().includes(query)
+            );
+            renderPosts(filtered);
+        }
+
+        function filterSavedPosts() {
+            const saved = postsData.filter(p => p.isSaved);
+            renderPosts(saved);
+            const banner = document.getElementById('feedFilterBanner');
+            banner.classList.remove('hidden');
+            document.getElementById('feedFilterText').textContent = `المنشورات المحفوظة (${saved.length})`;
+            if (window.innerWidth < 1024) toggleMobileSidebar();
+        }
+
+        function resetFeed(e) {
+            if (e) e.preventDefault();
+            document.getElementById('searchInput').value = '';
+            document.getElementById('feedFilterBanner').classList.add('hidden');
+            renderPosts(postsData);
+        }
+
+        // نظام القصص
+        let storyTimer;
+        function openStory(storyId) {
+            const story = storiesData.find(s => s.id === storyId);
+            if (!story) return;
+
+            document.getElementById('storyUserImg').src = story.avatar;
+            document.getElementById('storyUserName').textContent = story.user;
+            document.getElementById('storyImage').src = story.image;
+            document.getElementById('storyCaption').textContent = story.caption;
+
+            const modal = document.getElementById('storyModal');
+            const progress = document.getElementById('storyProgress');
+            modal.classList.remove('hidden');
+
+            progress.style.width = '0%';
+            clearInterval(storyTimer);
+            let width = 0;
+            storyTimer = setInterval(() => {
+                width += 2;
+                progress.style.width = width + '%';
+                if (width >= 100) {
+                    closeStoryModal();
+                }
+            }, 80);
+        }
+
+        function closeStoryModal() {
+            clearInterval(storyTimer);
+            document.getElementById('storyModal').classList.add('hidden');
+        }
+
+        function sendStoryReply() {
+            const input = document.getElementById('storyReplyInput');
+            if (input.value.trim()) {
+                showToast('تم إرسال ردك على القصة بنجاح! 💬');
+                input.value = '';
+                closeStoryModal();
+            }
+        }
+
+        function openStoryCreator() {
+            showToast('قريباً: ميزة رفع القصص المصورة مباشرة من الكاميرا 📸');
+        }
+
+        // الدردشة المصغرة
+        function openChat(name, avatar) {
+            document.getElementById('chatUserName').textContent = name;
+            document.getElementById('chatUserImg').src = avatar;
+            document.getElementById('miniChatBox').classList.remove('hidden');
+            document.getElementById('messagesDropdown').classList.add('hidden');
+            document.getElementById('chatInput').focus();
+        }
+
+        function closeChat() {
+            document.getElementById('miniChatBox').classList.add('hidden');
+        }
+
+        function sendChatMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const container = document.getElementById('chatMessages');
+            container.insertAdjacentHTML('beforeend', `
+                <div class="bg-brand-500 text-white p-2.5 rounded-2xl rounded-tl-none max-w-[80%] mr-auto">
+                    ${text}
+                </div>
+            `);
+            input.value = '';
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // اقتراحات الصداقة
+        function addFriend(elementId, name) {
+            const el = document.getElementById(elementId);
+            if (el) {
+                el.innerHTML = `<p class="text-xs text-green-600 font-bold py-2 text-center w-full">✓ تم إرسال طلب صداقة إلى ${name}</p>`;
+            }
+            showToast(`تم إرسال طلب صداقة إلى ${name}`);
+        }
+
+        // القوائم المنسدلة والتنقل
+        function toggleDropdown(id) {
+            const target = document.getElementById(id);
+            const allDropdowns = ['messagesDropdown', 'notificationsDropdown', 'accountDropdown'];
+            allDropdowns.forEach(d => {
+                if (d !== id) document.getElementById(d).classList.add('hidden');
+            });
+            target.classList.toggle('hidden');
+        }
+
+        function clearNotifications() {
+            document.getElementById('notifList').innerHTML = '<p class="text-center text-xs text-gray-400 py-4">لا توجد إشعارات جديدة</p>';
+            document.getElementById('notifBadge').classList.add('hidden');
+        }
+
+        function setActiveTab(btn, tabName) {
+            document.querySelectorAll('.nav-tab').forEach(t => {
+                t.classList.remove('text-brand-500', 'border-b-[3px]', 'border-brand-500');
+                t.classList.add('text-gray-500');
+            });
+            btn.classList.add('text-brand-500', 'border-b-[3px]', 'border-brand-500');
+            btn.classList.remove('text-gray-500');
+
+            if (tabName === 'home') resetFeed();
+            else showToast(`تم الانتقال إلى قسم: ${btn.title}`);
+        }
+
+        function filterCategory(cat) {
+            if (window.innerWidth < 1024) toggleMobileSidebar();
+            showToast(cat === 'friends' ? 'عرض قائمة الأصدقاء وطلبات الصداقة' : 'عرض المجموعات التي تتابعها');
+        }
+
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('rightSidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            sidebar.classList.toggle('translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        // إشعارات Toast بدلاً من alert()
+        function showToast(message) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'bg-gray-900/95 text-white text-xs sm:text-sm font-semibold px-4 py-3 rounded-xl shadow-lg flex items-center gap-2.5 transform transition-all duration-300 translate-y-2 opacity-0';
+            toast.innerHTML = `<i class="fa-solid fa-circle-info text-brand-400"></i><span>${message}</span>`;
+            
+            container.appendChild(toast);
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            });
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // إغلاق القوائم المنسدلة عند النقر خارجها
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('header')) {
+                document.getElementById('messagesDropdown').classList.add('hidden');
+                document.getElementById('notificationsDropdown').classList.add('hidden');
+                document.getElementById('accountDropdown').classList.add('hidden');
+            }
+        });
+
+        // تشغيل تسلسل شاشة البداية عند تحميل الصفحة
+        window.onload = function() {
+            startLoadingSequence();
+        };
+    </script>
+</body>
+</html>
